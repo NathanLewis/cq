@@ -8,12 +8,15 @@ use std::{
     fs::File,
     // process,
 };
-use clap::Parser;
+use clap::{Parser, ArgAction};
 use csv::Reader;
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version, about, long_about = None, disable_help_flag(true))]
 struct Args {
+    #[arg(short = '?', action = ArgAction::Help)]
+    help: bool,
+    
     #[arg(short, long, value_parser = clap::value_parser!(String))]
     file: String,
 
