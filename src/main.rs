@@ -1,6 +1,5 @@
 // Import the standard library's I/O module so we can read from stdin.
 // use std::io;
-use std::io::Write;
 use std::{
     // env,
     // error::Error,
@@ -34,13 +33,12 @@ struct Args {
     eader: bool,
 
     #[arg(short, long, default_value_t = -1)]
-    index: i16 // a max value of 32767
+    index: i16 // a maximum positive value of 32767 ought to be enough for anybody :-)
 }
 
 
 fn main() {
     let args = Args::parse();
-    //println!("{:?}", args);
     let delimiter = args.delimiter.replace("\\t", "\t");
     let mut rdr: Reader<Box<dyn io::Read>>;
     // Read from stdin
@@ -109,6 +107,7 @@ pub fn get_reader_from_input(delimiter: String, input: Box<dyn Read>) -> Reader<
 #[test]
 fn test_get_file_reader_reads_csv_data() {
     use tempfile::NamedTempFile;
+    use std::io::Write;
     let mut temp_file = NamedTempFile::new().unwrap();
     writeln!(temp_file, "name,age\nAlice,30\nBob,25").unwrap();
 
