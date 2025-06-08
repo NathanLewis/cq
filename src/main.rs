@@ -2,11 +2,11 @@
 // use std::io;
 use std::{
     // env,
-    // error::Error,
+    error::Error,
     io,
     // ffi::OsString,
     fs::File,
-    // process,
+    process,
 };
 use std::io::Read;
 use clap::Parser;
@@ -36,8 +36,14 @@ struct Args {
     index: i16 // a maximum positive value of 32767 ought to be enough for anybody :-)
 }
 
-
 fn main() {
+    if let Err(err) = run() {
+        println!("{}", err);
+        process::exit(1);
+    }
+}
+
+fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let delimiter = args.delimiter.replace("\\t", "\t");
     let mut rdr: Reader<Box<dyn io::Read>>;
@@ -50,7 +56,7 @@ fn main() {
             Ok(x) => x,
             Err(e) => {
                 eprintln!("Error opening file '{}': {}", args.file, e);
-                std::process::exit(1);
+                process::exit(1);
             }
         };
         rdr = get_file_reader(delimiter, file);
@@ -58,17 +64,17 @@ fn main() {
     if args.count {
         let count = rdr.records().count();
         println!("{:?} records", count);
-        return;     
+        return Ok(());
     }
     if args.eader {
         match rdr.headers() {
             Ok(headers) => {
                 println!("{:?}", headers);
-                return;
+                return Ok(());
             }
             Err(e) => {
                 eprintln!("Error reading headers: {}", e);
-                std::process::exit(1);
+                process::exit(1);
             }
         };
     }
@@ -88,6 +94,7 @@ fn main() {
             println!("{:?}", record);
         }
     }
+    Ok(())
 }
 
 fn get_file_reader(delimiter: String, file: File) -> Reader<Box<dyn Read>> {
