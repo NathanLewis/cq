@@ -1,10 +1,7 @@
-// Import the standard library's I/O module so we can read from stdin.
 use anyhow::{Context, Result};
 use std::{
-    // env,
     error::Error,
-    io,
-    // ffi::OsString,
+    io,  // so we can read from stdin.
     fs::File,
     process,
 };
@@ -20,7 +17,7 @@ struct Args {
     file: String,
 
     #[arg(short, long, default_value = ",", 
-        help = "The delimiter to use when parsing the CSV. The default delimiter is a comma")]
+        help = "The delimiter to use when parsing the CSV")]
     delimiter: String,
     
     // if true output the record count
