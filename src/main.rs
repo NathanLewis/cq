@@ -10,7 +10,6 @@ use clap::Parser;
 use csv::Reader;
 
 #[derive(Parser, Debug)]
-// #[command(version, about, long_about = None, disable_help_flag(true))]
 #[command(version, about, long_about = None)]
 struct Args {
     #[arg(short, long, value_parser = clap::value_parser!(String))]
@@ -95,6 +94,8 @@ pub fn get_reader_from_input(delimiter: String, has_header: bool, input: Box<dyn
         .delimiter(delimiter.as_bytes()[0])
         .has_headers(has_header)
         .flexible(true)
+        .comment(Some(b'#'))
+        .escape(Some(b'\\'))
         .from_reader(input)
 }
 
@@ -146,7 +147,7 @@ mod tests {
 
         let delimiter = "\t".to_string();
         let reader = get_reader_from_input(delimiter, true, Box::new(input));
-        // let reader = get_stdin_reader(delimiter); // This hangs because it waits for stdin
+        // let reader = get_stdin_reader(delimiter); // This will hang because it waits for stdin
 
         let records: Vec<_> = reader.into_records().map(|r| r.unwrap()).collect();
 
