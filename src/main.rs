@@ -8,6 +8,7 @@ use std::{
     fs::File,
     // process,
 };
+use std::io::Read;
 use clap::{Parser, ArgAction};
 use csv::Reader;
 
@@ -42,10 +43,7 @@ fn main() {
     let mut rdr: Reader<Box<dyn io::Read>>;
     // Read from stdin
     if args.file == "" || args.file == "-" {
-        rdr = csv::ReaderBuilder::new()
-            .delimiter(args.delimiter.as_bytes()[0])
-            .flexible(true)
-            .from_reader(Box::new(io::stdin()));
+        rdr = get_stdin_reader(&args);
     } else {
         // or read from a file
         let file = match File::open(&args.file) {
@@ -55,10 +53,7 @@ fn main() {
                 std::process::exit(1);
             }
         };
-        rdr = csv::ReaderBuilder::new()
-            .delimiter(args.delimiter.as_bytes()[0])
-            .flexible(true)
-            .from_reader(Box::new(file));
+        rdr = get_file_reader(&args, file);
     }
     if args.count {
         let count = rdr.records().count();
@@ -84,4 +79,18 @@ fn main() {
             println!("{:?}", record);
         }
     }
+}
+
+fn get_file_reader(args: &Args, file: File) -> Reader<Box<dyn Read>> {
+    csv::ReaderBuilder::new()
+        .delimiter(args.delimiter.as_bytes()[0])
+        .flexible(true)
+        .from_reader(Box::new(file))
+}
+
+fn get_stdin_reader(args: &Args) -> Reader<Box<dyn Read>> {
+    csv::ReaderBuilder::new()
+        .delimiter(args.delimiter.as_bytes()[0])
+        .flexible(true)
+        .from_reader(Box::new(io::stdin()))
 }
