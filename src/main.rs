@@ -16,20 +16,20 @@ use csv::Reader;
 // #[command(version, about, long_about = None, disable_help_flag(true))]
 #[command(version, about, long_about = None)]
 struct Args {
-    // #[arg(short = '?', action = ArgAction::Help)]
-    // usage: bool,
-    
     #[arg(short, long, value_parser = clap::value_parser!(String))]
     file: String,
 
-    #[arg(short, long, default_value = ",")]
+    #[arg(short, long, default_value = ",", 
+        help = "The delimiter to use when parsing the CSV. The default delimiter is a comma")]
     delimiter: String,
     
     // if true output the record count
-    #[arg(short, long, default_value_t = false)]
+    #[arg(short, long, default_value_t = false, 
+        help = "If this option is given, cq outputs the count of records in the CSV and exits")]
     count: bool,
 
-    #[arg(short, long, default_value_t = false)]
+    #[arg(short, long, default_value_t = false, 
+        help = "If this option is given, cq outputs the (h)eader of the CSV and exits")]
     eader: bool,
 
     #[arg(short, long, default_value_t = -1)]
