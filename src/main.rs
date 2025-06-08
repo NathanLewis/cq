@@ -93,17 +93,11 @@ fn main() {
 }
 
 fn get_file_reader(delimiter: String, file: File) -> Reader<Box<dyn Read>> {
-    csv::ReaderBuilder::new()
-        .delimiter(delimiter.as_bytes()[0])
-        .flexible(true)
-        .from_reader(Box::new(file))
+    get_reader_from_input(delimiter, Box::new(file))
 }
 
 fn get_stdin_reader(delimiter: String) -> Reader<Box<dyn Read>> {
-    csv::ReaderBuilder::new()
-        .delimiter(delimiter.as_bytes()[0])
-        .flexible(true)
-        .from_reader(Box::new(io::stdin()))
+    get_reader_from_input(delimiter, Box::new(io::stdin()))
 }
 pub fn get_reader_from_input(delimiter: String, input: Box<dyn Read>) -> Reader<Box<dyn Read>> {
     csv::ReaderBuilder::new()
