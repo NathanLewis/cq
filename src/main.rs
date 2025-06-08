@@ -1,5 +1,5 @@
 // Import the standard library's I/O module so we can read from stdin.
-// use std::io;
+use anyhow::{Context, Result};
 use std::{
     // env,
     error::Error,
@@ -51,46 +51,29 @@ fn run() -> Result<(), Box<dyn Error>> {
     if args.file == "" || args.file == "-" {
         rdr = get_stdin_reader(delimiter);
     } else {
-        // or read from a file
-        let file = match File::open(&args.file) {
-            Ok(x) => x,
-            Err(e) => {
-                eprintln!("Error opening file '{}': {}", args.file, e);
-                process::exit(1);
-            }
-        };
+        let file = File::open(&args.file).with_context(|| format!("Failed to open file {}", &args.file))?;
         rdr = get_file_reader(delimiter, file);
     }
     if args.count {
-        let count = rdr.records().count();
-        println!("{:?} records", count);
+        println!("{:?} records", rdr.records().count());
         return Ok(());
     }
     if args.eader {
-        match rdr.headers() {
-            Ok(headers) => {
-                println!("{:?}", headers);
-                return Ok(());
-            }
-            Err(e) => {
-                eprintln!("Error reading headers: {}", e);
-                process::exit(1);
-            }
-        };
+        println!("{:?}", rdr.headers().context("Failed to get headers")?);
     }
 
     if args.index > -1 {
         let index = args.index as usize;
         // Loop over each record.
         for result in rdr.records() {
-            // An error may occur, so abort the program in an unfriendly way.
-            // We will make this more friendly later!
-            let record = result.expect("a CSV record");
-            println!("{}", record.get(index).unwrap_or("Failed to get Index").trim_end());
+            let record = result.context("Failed to get CSV record")?;
+            println!("{}", record.get(index)
+                .with_context(|| format!("Failed to get CSV record at index {}", index))?
+                .trim_end());
         }
     } else {
         for result in rdr.records() {
-            let record = result.expect("a CSV record");
+            let record = result.context("Failed to get CSV record")?;
             println!("{:?}", record);
         }
     }
