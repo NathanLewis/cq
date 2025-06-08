@@ -104,36 +104,43 @@ pub fn get_reader_from_input(delimiter: String, input: Box<dyn Read>) -> Reader<
         .from_reader(input)
 }
 
-#[test]
-fn test_get_file_reader_reads_csv_data() {
-    use tempfile::NamedTempFile;
-    use std::io::Write;
-    let mut temp_file = NamedTempFile::new().unwrap();
-    writeln!(temp_file, "name,age\nAlice,30\nBob,25").unwrap();
-
-    let file = File::open(temp_file.path()).unwrap();
-    let delimiter = ",".to_string();
-    let reader = get_file_reader(delimiter, file);
-
-    let records: Vec<_> = reader.into_records().map(|r| r.unwrap()).collect();
-
-    assert_eq!(records.len(), 2);
-    assert_eq!(records[0].get(0).unwrap(), "Alice");
-    assert_eq!(records[1].get(1).unwrap(), "25");
-}
-
-#[test]
-fn test_get_reader_from_input_reads_tab_delimited_data() {
+#[cfg(test)]
+mod tests {
+    use super::*;
     use std::io::Cursor;
-    let input_data = "name\tage\nCharlie\t40\nDana\t35";
-    let input = Cursor::new(input_data);
+    use std::fs::File;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
 
-    let delimiter = "\t".to_string();
-    let reader = get_reader_from_input(delimiter, Box::new(input));
+    #[test]
+    fn test_get_file_reader_reads_csv_data() {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        writeln!(temp_file, "name,age\nAlice,30\nBob,25").unwrap();
 
-    let records: Vec<_> = reader.into_records().map(|r| r.unwrap()).collect();
+        let file = File::open(temp_file.path()).unwrap();
+        let delimiter = ",".to_string();
+        let reader = get_file_reader(delimiter, file);
 
-    assert_eq!(records.len(), 2);
-    assert_eq!(records[0].get(0).unwrap(), "Charlie");
-    assert_eq!(records[1].get(1).unwrap(), "35");
+        let records: Vec<_> = reader.into_records().map(|r| r.unwrap()).collect();
+
+        assert_eq!(records.len(), 2);
+        assert_eq!(records[0].get(0).unwrap(), "Alice");
+        assert_eq!(records[1].get(1).unwrap(), "25");
+    }
+
+    #[test]
+    fn test_get_reader_from_input_reads_tab_delimited_data() {
+        let input_data = "name\tage\nCharlie\t40\nDana\t35";
+        let input = Cursor::new(input_data);
+
+        let delimiter = "\t".to_string();
+        let reader = get_reader_from_input(delimiter, Box::new(input));
+        // let reader = get_stdin_reader(delimiter); // This hangs because it waits for stdin
+
+        let records: Vec<_> = reader.into_records().map(|r| r.unwrap()).collect();
+
+        assert_eq!(records.len(), 2);
+        assert_eq!(records[0].get(0).unwrap(), "Charlie");
+        assert_eq!(records[1].get(1).unwrap(), "35");
+    }
 }
