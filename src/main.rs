@@ -9,7 +9,7 @@ use std::{
     // process,
 };
 use std::io::Read;
-use clap::{Parser, ArgAction};
+use clap::Parser;
 use csv::Reader;
 
 #[derive(Parser, Debug)]
@@ -39,7 +39,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    println!("{:?}", args);
+    //println!("{:?}", args);
     let mut rdr: Reader<Box<dyn io::Read>>;
     // Read from stdin
     if args.file == "" || args.file == "-" {
@@ -60,6 +60,18 @@ fn main() {
         println!("{:?} records", count);
         return;     
     }
+    if args.eader {
+        match rdr.headers() {
+            Ok(headers) => {
+                println!("{:?}", headers); 
+                return;
+            }
+            Err(e) => {
+                eprintln!("Error reading headers: {}", e);
+                std::process::exit(1);
+            }
+        };
+    }
     
     if args.index > -1 {
         let index = args.index as usize;
@@ -68,10 +80,7 @@ fn main() {
             // An error may occur, so abort the program in an unfriendly way.
             // We will make this more friendly later!
             let record = result.expect("a CSV record");
-            println!("{}", match record.get(index) {
-                Some(x) => x,
-                None => todo!(),
-            }.trim_end());
+            println!("{}", record.get(index).unwrap_or("Failed to get Index").trim_end());
         }
     } else { 
         for result in rdr.records() {
@@ -83,14 +92,14 @@ fn main() {
 
 fn get_file_reader(args: &Args, file: File) -> Reader<Box<dyn Read>> {
     csv::ReaderBuilder::new()
-        .delimiter(args.delimiter.as_bytes()[0])
+        .delimiter(args.delimiter.replace("\\t", "\t").as_bytes()[0])
         .flexible(true)
         .from_reader(Box::new(file))
 }
 
 fn get_stdin_reader(args: &Args) -> Reader<Box<dyn Read>> {
     csv::ReaderBuilder::new()
-        .delimiter(args.delimiter.as_bytes()[0])
+        .delimiter(args.delimiter.replace("\\t", "\t").as_bytes()[0])
         .flexible(true)
         .from_reader(Box::new(io::stdin()))
 }
